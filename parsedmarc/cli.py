@@ -1186,14 +1186,14 @@ def _main():
         for proc in processes:
             proc.start()
 
+        for conn in connections:
+            results.append(conn.recv())
+
         for proc in processes:
             proc.join()
             if sys.stdout.isatty():
                 counter += 1
                 pbar.update(counter - pbar.n)
-
-        for conn in connections:
-            results.append(conn.recv())
 
     for result in results:
         if type(result[0]) is ParserError:
@@ -1209,12 +1209,16 @@ def _main():
 
     for mbox_path in mbox_paths:
         strip = opts.strip_attachment_payloads
-        reports = get_dmarc_reports_from_mbox(mbox_path,
-                                              nameservers=opts.nameservers,
-                                              dns_timeout=opts.dns_timeout,
-                                              strip_attachment_payloads=strip,
-                                              ip_db_path=opts.ip_db_path,
-                                              offline=opts.offline)
+        reports = get_dmarc_reports_from_mbox(
+            mbox_path,
+            nameservers=opts.nameservers,
+            dns_timeout=opts.dns_timeout,
+            strip_attachment_payloads=strip,
+            ip_db_path=opts.ip_db_path,
+            always_use_local_files=opts.always_use_local_files,
+            reverse_dns_map_path=opts.reverse_dns_map_path,
+            reverse_dns_map_url=opts.reverse_dns_map_url,
+            offline=opts.offline)
         aggregate_reports += reports["aggregate_reports"]
         forensic_reports += reports["forensic_reports"]
         smtp_tls_reports += reports["smtp_tls_reports"]
@@ -1301,6 +1305,9 @@ def _main():
                 reports_folder=opts.mailbox_reports_folder,
                 archive_folder=opts.mailbox_archive_folder,
                 ip_db_path=opts.ip_db_path,
+                always_use_local_files=opts.always_use_local_files,
+                reverse_dns_map_path=opts.reverse_dns_map_path,
+                reverse_dns_map_url=opts.reverse_dns_map_url,
                 offline=opts.offline,
                 nameservers=opts.nameservers,
                 test=opts.mailbox_test,
@@ -1352,6 +1359,9 @@ def _main():
                 strip_attachment_payloads=opts.strip_attachment_payloads,
                 batch_size=opts.mailbox_batch_size,
                 ip_db_path=opts.ip_db_path,
+                always_use_local_files=opts.always_use_local_files,
+                reverse_dns_map_path=opts.reverse_dns_map_path,
+                reverse_dns_map_url=opts.reverse_dns_map_url,
                 offline=opts.offline)
         except FileExistsError as error:
             logger.error("{0}".format(error.__str__()))
